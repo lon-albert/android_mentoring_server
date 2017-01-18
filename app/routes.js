@@ -14,6 +14,11 @@ function getTodos(res) {
 
 module.exports = function (app) {
 
+    app.get('/health', (req, res) => {
+        res.sendStatus(200);
+        res.end();
+    });
+
     // api ---------------------------------------------------------------------
     // get all todos
     app.get('/api/todos', function (req, res) {
