@@ -10,7 +10,18 @@ var methodOverride = require('method-override');
 const env = process.env
 
 // configuration ===============================================================
-mongoose.connect(database.localUrl); 	// Connect to local MongoDB instance. A remoteUrl is also available (modulus.io)
+//provide a sensible default for local development
+var mongodb_connection_string = database.localUrl;
+var server_port = process.env.OPENSHIFT_NODEJS_PORT || 3000;
+var server_ip_address = process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1';
+//take advantage of openshift env vars when available:
+if(process.env.OPENSHIFT_MONGODB_DB_URL){
+    mongodb_connection_string = process.env.OPENSHIFT_MONGODB_DB_URL + db_name;
+}
+
+app.set('port', (server_port));
+
+mongoose.connect(mongodb_connection_string); 	// Connect to local MongoDB instance. A remoteUrl is also available (modulus.io)
 
 app.use(express.static('./public')); 		// set the static files location /public/img will be /img for users
 app.use(morgan('dev')); // log every request to the console
@@ -24,6 +35,7 @@ app.use(methodOverride('X-HTTP-Method-Override')); // override with the X-HTTP-M
 require('./app/routes.js')(app);
 
 // listen (start app with node server.js) ======================================
-app.listen(env.NODE_PORT || 3000, env.NODE_IP || 'localhost', function () {
+app.listen(app.get('port'), server_ip_address,  function () {
     console.log(`Application worker ${process.pid} started...`);
+    console.log('Attendance System Server listening on port '+ app.get('port'));
 });
